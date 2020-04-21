@@ -19,16 +19,22 @@ shinyUI(# Define page
                 width = NULL,
                 placeholder = "Minnesota"
             ),
+            
             actionButton("updateData", "Update"),
+            
             # Sidebar Menu
             sidebarMenu(
                 menuItem("States", tabName = "states"),
-                menuItem("United States", tabName = "us")
+                menuItem("United States", tabName = "us"),
+                menuItem("About", tabName = "about")
             )
         ),
         # Define body
-        dashboardBody(tabItems(
-            # States
+        dashboardBody(
+            tabItems(
+            #############################################
+            ################ State Level ################
+            #############################################
             tabItem(
                 "states",
                 # Top summary row
@@ -69,7 +75,9 @@ shinyUI(# Define page
                     )
                 )
             ),
-            # US Level
+            #############################################
+            ################### US Level ################
+            #############################################
             tabItem(
                 "us",
                 # Top summary row
@@ -129,6 +137,10 @@ shinyUI(# Define page
                         plotlyOutput("stateDeaths100kPlot")
                     )
                 )
+            ),
+            # About Page
+            tabItem("about",
+                h1("About the COVID-19 Tracker")
             )
         ))
     ))

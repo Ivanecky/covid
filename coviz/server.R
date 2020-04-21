@@ -17,8 +17,19 @@ states = read.csv(text = state.link)
 # US Population data
 pop = read.csv("nst-est2019-alldata.csv")
 
+# Shelter In Place data
+sip = read.csv("sip.csv")
+
+sip = sip %>% select(state, order_date)
+
 pop = pop %>%
     select(NAME, POPESTIMATE2019)
+
+# List of "states" not to include
+remove_states = c("American Samoa", "Guam", "Northern Mariana Islands", "Virgin Islands")
+
+# Filter out
+states = states %>% filter(!(state %in% remove_states))
 
 # Reassign date values
 counties$date = lubridate::ymd(counties$date)
@@ -41,6 +52,10 @@ states = states %>%
         cases = sum(cases),
         deaths = sum(deaths),
         death_rate = round((deaths / cases)*100, 2)
+    ) %>%
+    left_join(sip, by = c("state")) %>%
+    mutate(
+        order_date = lubridate::ymd(order_date)
     )
 
 today.state = states %>%
@@ -51,7 +66,8 @@ today.state = states %>%
     mutate(
         casesPer100k = cases / (POPESTIMATE2019 / 100000),
         deathsPer100k = deaths / (POPESTIMATE2019 / 100000)
-    )
+    ) %>%
+    left_join(sip, by = c("state"))
 
 today.county = counties %>%
     group_by(state, county) %>%
@@ -86,6 +102,9 @@ shinyServer(function(input, output) {
     # State plot
     output$state_plot = renderPlotly({
         df = state.df()
+        # Get start & end of SIP
+        start = max(df$order_date)
+        end = max(df$order_date) + 14
         # Create plot
         p = ggplot(df, aes(date)) +
             geom_point(aes(y = cases, colour = "cases")) +
@@ -93,7 +112,9 @@ shinyServer(function(input, output) {
             geom_point(aes(y = deaths, colour = "deaths")) +
             geom_line(aes(y = deaths, colour = "deaths")) +
             ggtitle(paste0("Cases vs Deaths in ", input$stateName)) +
-            labs(x = "Date", y = "Count")
+            labs(x = "Date", y = "Count") +
+            geom_vline(xintercept = as.numeric(start)) +
+            geom_vline(xintercept = as.numeric(end))
         
         ggplotly(p)
     })
@@ -101,6 +122,9 @@ shinyServer(function(input, output) {
     # Growth rate plot
     output$growth_plot = renderPlotly({
         df = state.df()
+        # Get start & end of SIP
+        start = max(df$order_date)
+        end = max(df$order_date) + 14
         # Calculate growth rate
         df = df %>% arrange(date) %>% mutate(growthRate = cases - lag(cases))
         # Create plot
@@ -108,7 +132,9 @@ shinyServer(function(input, output) {
             geom_point(aes(y = growthRate, colour = "cases")) +
             geom_line(aes(y = growthRate, colour = "cases")) +
             ggtitle(paste0("Growth Rate in ", input$stateName)) +
-            labs(x = "Date", y = "Growth")
+            labs(x = "Date", y = "Growth") +
+            geom_vline(xintercept = as.numeric(start)) +
+            geom_vline(xintercept = as.numeric(end))
         
         ggplotly(p)
     })
@@ -145,6 +171,18 @@ shinyServer(function(input, output) {
             labs(x = "County", y = "Confirmed Cases")
         
         ggplotly(p)
+    })
+    
+    # Daily State Change
+    output$dailyStateChange = renderValueBox({
+        df = state.df()
+        df = df %>% arrange(date) %>% mutate(growthRate = cases - lag(cases))
+        valueBox(df[max(date), ]$growthRate, "Case Change", colour = "green")
+    })
+    
+    # State Rank (Death Rate)
+    output$deathRateRank = renderValueBox({
+        valueBox("TESTING", "State Rank", colour = "pink")
     })
     
     ###########################################################################################
@@ -230,6 +268,27 @@ shinyServer(function(input, output) {
             labs(x = "State", y = "Deaths Per 100k")
         
         ggplotly(p)
+    })
+    
+    # Daily US Change
+    output$dailyUSChange = renderValueBox({
+        df = us.df()
+        df = df %>% arrange(date) %>% mutate(growthRate = cases - lag(cases))
+        valueBox(df[max(date), ]$growthRate, "Case Change", colour = "green")
+    })
+    
+    # Fastest Growing State
+    output$fastestGrowingState = renderValueBox({
+        valueBox(today[max(today$death_rate), ]$state, "Deadliest State", colour = "red")
+    })
+    
+    ###########################################################################################
+    ###################################### GENERAL ############################################
+    ###########################################################################################
+    # Data Last Updated
+    output$lastUpdated = renderValueBox({
+        df = us.df()
+        valueBox(max(df$date), "Data Updated On", colour = "blue")
     })
 
 })
