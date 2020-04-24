@@ -112,9 +112,7 @@ shinyServer(function(input, output) {
             geom_point(aes(y = deaths, colour = "deaths")) +
             geom_line(aes(y = deaths, colour = "deaths")) +
             ggtitle(paste0("Cases vs Deaths in ", input$stateName)) +
-            labs(x = "Date", y = "Count") +
-            geom_vline(xintercept = as.numeric(start)) +
-            geom_vline(xintercept = as.numeric(end))
+            labs(x = "Date", y = "Count")
         
         ggplotly(p)
     })
@@ -134,7 +132,9 @@ shinyServer(function(input, output) {
             ggtitle(paste0("Growth Rate in ", input$stateName)) +
             labs(x = "Date", y = "Growth") +
             geom_vline(xintercept = as.numeric(start)) +
-            geom_vline(xintercept = as.numeric(end))
+            geom_vline(xintercept = as.numeric(end)) +
+            geom_text(aes(x=(start), label="Shelter In Place Enacted", y = mean(cases)/2), colour="blue", angle=90, vjust = 1.2, text=element_text(size=8)) +
+            geom_text(aes(x=(end), label="Shelter In Place - 14 Days After", y = mean(cases)/2), colour="blue", angle=90, vjust = 1.2, text=element_text(size=8))
         
         ggplotly(p)
     })
@@ -158,6 +158,7 @@ shinyServer(function(input, output) {
                  "Death Rate", color = "red")
     })
     
+    # Worst Counties plot
     output$worstCounties = renderPlotly({
         df = state.county.df()
         p = ggplot(df, aes(
