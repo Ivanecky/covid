@@ -43,6 +43,11 @@ shinyUI(# Define page
                     valueBoxOutput("numDied"),
                     valueBoxOutput("deathRate")
                 ),
+                fluidRow(
+                    valueBoxOutput("lastUpdated"),
+                    valueBoxOutput("dailyStateChange"),
+                    valueBoxOutput("deathRateRank")
+                ),
                 # Main plot row
                 # Cases vs Deaths plot
                 fluidRow(

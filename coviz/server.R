@@ -95,6 +95,12 @@ shinyServer(function(input, output) {
         us.df
     })
     
+    death.rank = eventReactive(input$updateData, {
+        df = today.state %>% arrange(-death_rate) %>% mutate(rank = 1:nrow(df))
+        rank = df[which(df$state == input$stateName), ]$rank
+        rank
+    })
+    
     ###########################################################################################
     ###################################### STATE TAB ##########################################
     ###########################################################################################
@@ -158,6 +164,11 @@ shinyServer(function(input, output) {
                  "Death Rate", color = "red")
     })
     
+    output$lastUpdated = renderValueBox({
+        df = state.df()
+        valueBox(max(df$date), "Last Updated")
+    })
+    
     # Worst Counties plot
     output$worstCounties = renderPlotly({
         df = state.county.df()
@@ -178,12 +189,13 @@ shinyServer(function(input, output) {
     output$dailyStateChange = renderValueBox({
         df = state.df()
         df = df %>% arrange(date) %>% mutate(growthRate = cases - lag(cases))
-        valueBox(df[max(date), ]$growthRate, "Case Change", colour = "green")
+        caseChange = as.numeric(df[nrow(df), ]$growthRate)
+        valueBox(caseChange, "Case Change", color = "green")
     })
     
     # State Rank (Death Rate)
     output$deathRateRank = renderValueBox({
-        valueBox("TESTING", "State Rank", colour = "pink")
+        valueBox(death.rank(), "State Death Rate Rank", color = "navy")
     })
     
     ###########################################################################################
@@ -286,10 +298,6 @@ shinyServer(function(input, output) {
     ###########################################################################################
     ###################################### GENERAL ############################################
     ###########################################################################################
-    # Data Last Updated
-    output$lastUpdated = renderValueBox({
-        df = us.df()
-        valueBox(max(df$date), "Data Updated On", colour = "blue")
-    })
+
 
 })
