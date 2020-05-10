@@ -80,25 +80,30 @@ shinyServer(function(input, output) {
     ###################################### DATA SETUP #########################################
     ###########################################################################################
     # Function to filter data
-    state.df = eventReactive(input$updateData, {
+    state.df <- eventReactive(input$stateName, {
         state.df = states %>% filter(state == input$stateName)
-        state.df
+        return(state.df)
     })
     
-    state.county.df = eventReactive(input$updateData, {
+    state.county.df <- eventReactive(input$stateName, {
         state.county.df = today.county %>% filter(state == input$stateName)
-        state.county.df
+        return(state.county.df)
     })
     
-    us.df = eventReactive(input$updateData, {
+    us.df <- eventReactive(input$stateName, {
         us.df = states %>% group_by(date) %>% summarise(cases = sum(cases), deaths = sum(deaths))
-        us.df
+        return(us.df)
     })
     
-    death.rank = eventReactive(input$updateData, {
+    death.rank <- eventReactive(input$stateName, {
         df = today.state %>% arrange(-death_rate) %>% mutate(rank = 1:nrow(df))
         rank = df[which(df$state == input$stateName), ]$rank
-        rank
+        return(rank)
+    })
+    
+    # Function to set input state name reactively
+    stateName <- eventReactive(input$stateName, {
+        return(input$stateName)
     })
     
     ###########################################################################################
@@ -106,8 +111,9 @@ shinyServer(function(input, output) {
     ###########################################################################################
     
     # State plot
-    output$state_plot = renderPlotly({
-        df = state.df()
+    output$state_plot <- renderPlotly({
+        df <- state.df()
+        stateName <- stateName()
         # Get start & end of SIP
         start = max(df$order_date)
         end = max(df$order_date) + 14
@@ -117,15 +123,16 @@ shinyServer(function(input, output) {
             geom_line(aes(y = cases, colour = "cases")) +
             geom_point(aes(y = deaths, colour = "deaths")) +
             geom_line(aes(y = deaths, colour = "deaths")) +
-            ggtitle(paste0("Cases vs Deaths in ", input$stateName)) +
+            ggtitle(paste0("Cases vs Deaths in ", stateName)) +
             labs(x = "Date", y = "Count")
         
         ggplotly(p)
     })
     
     # Growth rate plot
-    output$growth_plot = renderPlotly({
-        df = state.df()
+    output$growth_plot <- renderPlotly({
+        df <- state.df()
+        stateName <- stateName()
         # Get start & end of SIP
         start = max(df$order_date)
         end = max(df$order_date) + 14
@@ -135,7 +142,7 @@ shinyServer(function(input, output) {
         p = ggplot(df, aes(date)) +
             geom_point(aes(y = growthRate, colour = "cases")) +
             geom_line(aes(y = growthRate, colour = "cases")) +
-            ggtitle(paste0("Growth Rate in ", input$stateName)) +
+            ggtitle(paste0("Growth Rate in ", stateName)) +
             labs(x = "Date", y = "Growth") +
             geom_vline(xintercept = as.numeric(start)) +
             geom_vline(xintercept = as.numeric(end)) +
@@ -146,32 +153,32 @@ shinyServer(function(input, output) {
     })
     
     # Value Box Outputs
-    output$numConfirmed = renderValueBox({
-        df = state.df()
+    output$numConfirmed <- renderValueBox({
+        df <- state.df()
         valueBox(max(df$cases), 
                  "Confirmed", color = "yellow")
     })
     
-    output$numDied = renderValueBox({
-        df = state.df()
+    output$numDied <- renderValueBox({
+        df <- state.df()
         valueBox(max(df$deaths), 
                  "Deaths", color = "orange")
     })
     
-    output$deathRate = renderValueBox({
-        df = state.df()
+    output$deathRate <- renderValueBox({
+        df <- state.df()
         valueBox(paste0(round(((max(df$deaths) / max(df$cases))*100), 2),"%"), 
                  "Death Rate", color = "red")
     })
     
-    output$lastUpdated = renderValueBox({
-        df = state.df()
+    output$lastUpdated <- renderValueBox({
+        df <- state.df()
         valueBox(max(df$date), "Last Updated")
     })
     
     # Worst Counties plot
-    output$worstCounties = renderPlotly({
-        df = state.county.df()
+    output$worstCounties <- renderPlotly({
+        df <- state.county.df()
         p = ggplot(df, aes(
             x = reorder(county, cases),
             cases,
@@ -186,15 +193,15 @@ shinyServer(function(input, output) {
     })
     
     # Daily State Change
-    output$dailyStateChange = renderValueBox({
-        df = state.df()
+    output$dailyStateChange <- renderValueBox({
+        df <- state.df()
         df = df %>% arrange(date) %>% mutate(growthRate = cases - lag(cases))
         caseChange = as.numeric(df[nrow(df), ]$growthRate)
         valueBox(caseChange, "Case Change", color = "green")
     })
     
     # State Rank (Death Rate)
-    output$deathRateRank = renderValueBox({
+    output$deathRateRank <- renderValueBox({
         valueBox(death.rank(), "State Death Rate Rank", color = "navy")
     })
     
@@ -202,7 +209,7 @@ shinyServer(function(input, output) {
     ###################################### US TAB #############################################
     ###########################################################################################
     # State plot
-    output$usPlot = renderPlotly({
+    output$usPlot <- renderPlotly({
         df = us.df()
         # Create plot
         p = ggplot(df, aes(date)) +
@@ -217,7 +224,7 @@ shinyServer(function(input, output) {
     })
     
     # Growth rate plot
-    output$growthUSPlot = renderPlotly({
+    output$growthUSPlot <- renderPlotly({
         df = us.df()
         # Calculate growth rate
         df = df %>% arrange(date) %>% mutate(growthRate = cases - lag(cases))
@@ -232,26 +239,26 @@ shinyServer(function(input, output) {
     })
     
     # Value Box Outputs
-    output$numUSConfirmed = renderValueBox({
+    output$numUSConfirmed <- renderValueBox({
         df = us.df()
         valueBox(max(df$cases), 
                  "Confirmed", color = "yellow")
     })
     
-    output$numUSDied = renderValueBox({
+    output$numUSDied <- renderValueBox({
         df = us.df()
         valueBox(max(df$deaths), 
                  "Deaths", color = "orange")
     })
     
-    output$deathRateUS = renderValueBox({
+    output$deathRateUS <- renderValueBox({
         df = us.df()
         valueBox(paste0(round(((max(df$deaths) / max(df$cases))*100), 2),"%"), 
                  "Death Rate", color = "red")
     })
     
     # Cases By State
-    output$stateCasesPlot = renderPlotly({
+    output$stateCasesPlot <- renderPlotly({
         p = ggplot(today.state, aes(x = reorder(state, cases), cases, fill = state)) +
             geom_bar(stat = 'identity') +
             theme(legend.position="none", 
@@ -262,7 +269,7 @@ shinyServer(function(input, output) {
     })
     
     # Cases Per 100k By State
-    output$stateCases100kPlot = renderPlotly({
+    output$stateCases100kPlot <- renderPlotly({
         p = ggplot(today.state, aes(x = reorder(state, casesPer100k), casesPer100k, fill = state)) +
             geom_bar(stat = 'identity') +
             theme(legend.position="none", 
@@ -273,7 +280,7 @@ shinyServer(function(input, output) {
     })
     
     # Deaths Per 100k By State
-    output$stateDeaths100kPlot = renderPlotly({
+    output$stateDeaths100kPlot <- renderPlotly({
         p = ggplot(today.state, aes(x = reorder(state, deathsPer100k), deathsPer100k, fill = state)) +
             geom_bar(stat = 'identity') +
             theme(legend.position="none", 
@@ -284,15 +291,17 @@ shinyServer(function(input, output) {
     })
     
     # Daily US Change
-    output$dailyUSChange = renderValueBox({
+    output$dailyUSChange <- renderValueBox({
         df = us.df()
         df = df %>% arrange(date) %>% mutate(growthRate = cases - lag(cases))
-        valueBox(df[max(date), ]$growthRate, "Case Change", colour = "green")
+        caseChange = as.numeric(df[nrow(df), ]$growthRate)
+        valueBox(caseChange, "Case Change", color = "green")
     })
     
     # Fastest Growing State
-    output$fastestGrowingState = renderValueBox({
-        valueBox(today[max(today$death_rate), ]$state, "Deadliest State", colour = "red")
+    output$highestDeathRate <- renderValueBox({
+        df = us.df()
+        valueBox(max(df$death_rate), "Highest Death Rate", colour = "red")
     })
     
     ###########################################################################################

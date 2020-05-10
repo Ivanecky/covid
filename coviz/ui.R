@@ -20,7 +20,7 @@ shinyUI(# Define page
                 placeholder = "Minnesota"
             ),
             
-            actionButton("updateData", "Update"),
+            submitButton("Update Data"),
             
             # Sidebar Menu
             sidebarMenu(
@@ -91,6 +91,7 @@ shinyUI(# Define page
                     valueBoxOutput("numUSDied"),
                     valueBoxOutput("deathRateUS")
                 ),
+
                 # Main plot row
                 # Cases vs Deaths plot
                 fluidRow(
@@ -145,7 +146,13 @@ shinyUI(# Define page
             ),
             # About Page
             tabItem("about",
-                h1("About the COVID-19 Tracker")
+                h1("About the COVID-19 Tracker"),
+                h2("Disclaimer"),
+                    p("This tool should not be used to make any kind of medical decision(s). This is simply a visualization of COVID-19 data from the sources indicated below. Feel free to use this as a tracker or way to stay informed on spread, but DO NOT use this regarding any health or medical concerns."),
+                h2("Data Sources"),
+                p("Data utilized in this tracker comes from the New York Times which can be found here : https://raw.githubusercontent.com/nytimes/covid-19-data/master"),
+                p("State population estimates are as of 2019. These populations may differ from current actual populations but are used as the closest estimates.")
+            
             )
         ))
     ))
