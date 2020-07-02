@@ -4,6 +4,7 @@ library(ggplot2)
 library(tidymodels)
 library(dplyr)
 library(plotly)
+library(DT)
 
 shinyUI(# Define page
     dashboardPage(
@@ -26,6 +27,7 @@ shinyUI(# Define page
             sidebarMenu(
                 menuItem("States", tabName = "states"),
                 menuItem("United States", tabName = "us"),
+                menuItem("Tracking Changes", tabName = "changes"),
                 menuItem("About", tabName = "about")
             )
         ),
@@ -45,24 +47,31 @@ shinyUI(# Define page
                 ),
                 fluidRow(
                     valueBoxOutput("lastUpdated"),
-                    valueBoxOutput("dailyStateChange"),
-                    valueBoxOutput("deathRateRank")
+                    valueBoxOutput("newCases"),
+                    valueBoxOutput("newDeaths")
                 ),
                 # Main plot row
                 # Cases vs Deaths plot
                 fluidRow(
                     box(
-                        title = "Tracking Cases within the State",
+                        title = "Cases in State",
                         solidHeader = T,
-                        width = 12,
+                        width = 6,
                         collapsible = T,
-                        plotlyOutput("state_plot")
+                        plotlyOutput("stateCases")
+                    ),
+                    box(
+                        title = "Deaths in State",
+                        solidHeader = T,
+                        width = 6,
+                        collapsible = T,
+                        plotlyOutput("stateDeaths")
                     )
                 ),
                 # Growth Rate plot
                 fluidRow(
                     box(
-                        title = "Tracking Growth Rate within the State",
+                        title = "Growth Rate within the State",
                         solidHeader = T,
                         width = 12,
                         collapsible = T,
@@ -72,7 +81,7 @@ shinyUI(# Define page
                 # Worst Counties plot
                 fluidRow(
                     box(
-                        title = "Tracking Worst Counties within the State",
+                        title = "Tracking Counties within the State",
                         solidHeader = T,
                         width = 12,
                         collapsible = T,
@@ -89,24 +98,34 @@ shinyUI(# Define page
                 fluidRow(
                     valueBoxOutput("numUSConfirmed"),
                     valueBoxOutput("numUSDied"),
-                    valueBoxOutput("deathRateUS")
+                    valueBoxOutput("deathRateUS"),
+                    valueBoxOutput("lastUpdatedUS"),
+                    valueBoxOutput("newUSCases"),
+                    valueBoxOutput("newUSDeaths")
                 ),
 
                 # Main plot row
                 # Cases vs Deaths plot
                 fluidRow(
                     box(
-                        title = "Tracking Cases within the United States",
+                        title = "Cases in the United States",
                         solidHeader = T,
-                        width = 12,
+                        width = 6,
                         collapsible = T,
-                        plotlyOutput("usPlot")
+                        plotlyOutput("usCasesPlot")
+                    ),
+                    box(
+                        title = "Deaths in the United States",
+                        solidHeader = T,
+                        width = 6,
+                        collapsible = T,
+                        plotlyOutput("usDeathsPlot")
                     )
                 ),
                 # Growth Rate plot
                 fluidRow(
                     box(
-                        title = "Tracking Growth Rate in United States",
+                        title = "New Daily Cases in United States",
                         solidHeader = T,
                         width = 12,
                         collapsible = T,
@@ -144,6 +163,35 @@ shinyUI(# Define page
                     )
                 )
             ),
+            tabItem("changes",
+                fluidRow(
+                    box(
+                        title = "Raw Growth Rate by State",
+                        solidHeader = T,
+                        width = 12,
+                        collapsible = T,
+                        plotlyOutput("stateChanges")
+                    )
+                ),
+                fluidRow(
+                    box(
+                        title = "Growth Rate as Percentage of Total Cases by State",
+                        solidHeader = T,
+                        width = 12,
+                        collapsible = T,
+                        plotlyOutput("stateChangePct")
+                    )
+                ),
+                fluidRow(
+                    box(
+                        title = "Growth Summary Statistics for States",
+                        solidHeader = T,
+                        width = 12,
+                        collapsible = T,
+                        DT::dataTableOutput("twoWeekChange")
+                    )
+                )
+            ),
             # About Page
             tabItem("about",
                 h1("About the COVID-19 Tracker"),
@@ -151,7 +199,7 @@ shinyUI(# Define page
                     p("This tool should not be used to make any kind of medical decision(s). This is simply a visualization of COVID-19 data from the sources indicated below. Feel free to use this as a tracker or way to stay informed on spread, but DO NOT use this regarding any health or medical concerns."),
                 h2("Data Sources"),
                 p("Data utilized in this tracker comes from the New York Times which can be found here : https://raw.githubusercontent.com/nytimes/covid-19-data/master"),
-                p("State population estimates are as of 2019. These populations may differ from current actual populations but are used as the closest estimates.")
+                p("State population estimates are as of 2019. These populations may differ from current actual populations but are used as the closest estimates. These esimates are available on the US Census website.")
             
             )
         ))

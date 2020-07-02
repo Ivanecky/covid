@@ -1,0 +1,12 @@
+name: coviz-MN
+title: coviz-MN
+username:
+account: ivanecky
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2510877
+bundleId: 3323026
+url: https://ivanecky.shinyapps.io/coviz-MN/
+when: 1593264219.13918
+asMultiple: FALSE
+asStatic: FALSE
