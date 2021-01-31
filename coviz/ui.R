@@ -71,7 +71,7 @@ shinyUI(# Define page
                 # Growth Rate plot
                 fluidRow(
                     box(
-                        title = "Growth Rate within the State",
+                        title = "New Cases by Date Reported",
                         solidHeader = T,
                         width = 12,
                         collapsible = T,
@@ -184,7 +184,7 @@ shinyUI(# Define page
                 ),
                 fluidRow(
                     box(
-                        title = "Growth Summary Statistics for States",
+                        title = "Two-week Changes by State",
                         solidHeader = T,
                         width = 12,
                         collapsible = T,

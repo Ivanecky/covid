@@ -7,6 +7,7 @@ library(plotly)
 library(RCurl)
 library(rvest)
 library(XML)
+library(ggthemes)
 
 # Read COVID data from URL links
 # Counties
@@ -166,7 +167,7 @@ shinyServer(function(input, output) {
         df <- state.df()
         # Create plot
         p <- ggplot(df, aes(date, cases)) +
-                geom_line() +
+                geom_bar(stat = "identity", color = "blue", fill = "lightblue") +
                 labs(x = "Date", y = "Count") +
                 scale_color_manual(values = c('blue'))
         # Plotly
@@ -253,7 +254,6 @@ shinyServer(function(input, output) {
         p <- ggplot(df, aes(date)) +
             geom_point(aes(y = growthRate, colour = "cases")) +
             geom_line(aes(y = growthRate, colour = "cases")) +
-            ggtitle("New Cases by Day in United States") +
             labs(x = "Date", y = "Growth", colour = "")
         
         ggplotly(p)
